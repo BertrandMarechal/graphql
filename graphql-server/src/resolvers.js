@@ -12,6 +12,8 @@ const resolvers = {
     },
     Mutation: {
         createUser: (parent, { id, name, email, age }, context, info) => {
+            if (!id || !name || !email) throw new Error("Please provide id, name and email.");
+
             const newUser = { id, name, email, age };
 
             users.push(newUser);
@@ -19,11 +21,12 @@ const resolvers = {
             return newUser;
         },
         updateUser: (parent, { id, name, email, age }, context, info) => {
-            let newUser = users.find(user => user.id === id);
 
-            newUser.name = name;
-            newUser.email = email;
-            newUser.age = age;
+            let newUser = users.find(user => user.id === id);
+            
+            newUser.name = name || newUser.name;
+            newUser.email = email || newUser.email;
+            newUser.age = age || newUser.age;
 
             return newUser;
         },
