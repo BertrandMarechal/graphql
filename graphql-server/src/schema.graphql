@@ -6,6 +6,7 @@ type User {
 }
 type Query {
   users: [User!]!
+  users2: [User!]!
   user(id: ID!): User!
 }
 type Mutation {

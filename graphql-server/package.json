@@ -13,5 +13,8 @@
   "license": "ISC",
   "devDependencies": {
     "graphpack": "^1.0.6"
+  },
+  "dependencies": {
+    "pg-promise": "^8.5.4"
   }
 }

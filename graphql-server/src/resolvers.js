@@ -1,4 +1,10 @@
 import { users } from "./db";
+import PGP from 'pg-promise';
+
+const connectionString = 'postgres://root:route@localhost:5432/local_cad';
+const pgp = PGP();
+const db = pgp(connectionString);
+
 
 const resolvers = {
     Query: {
@@ -7,7 +13,21 @@ const resolvers = {
             await new Promise((resolve) => setTimeout(() => resolve(user), 1000));
             return user;
         },
-        users: (parent, args, context, info) => {
+        users: async (parent, args, context, info) => {
+            const usersFromPG = await db.any(`
+                select
+                    usr_email as email,
+                    pk_usr_id as id,
+                    usr_first_name || usr_last_name as name,                    
+                    21 as age
+                from cadt_user_usr
+                where usr_email != ''`);
+            return usersFromPG;
+        },
+        users2: async (parent, args, context, info) => {
+            const usersFromPG = await db.any('select usr_email from cadt_user_usr');
+            console.log(usersFromPG);
+            pgp.end();
             return users;
         }
     },
