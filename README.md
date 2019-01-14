@@ -11,7 +11,7 @@ npm run dev
 ```
 
 - Navigate to [http://localhost:4000](http://localhost:4000)
-- Try the following
+- Try the following queries
   - Get users
 
 ```GraphQL
@@ -38,6 +38,7 @@ query {
 }
 ```
 
+- Try the following mutations
   - Create User
 
 ```GraphQL

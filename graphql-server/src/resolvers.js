@@ -2,8 +2,9 @@ import { users } from "./db";
 
 const resolvers = {
     Query: {
-        user: (parent, { id }, context, info) => {
+        user: async (parent, { id }, context, info) => {
             const user = users.find(user => user.id === +id);
+            await new Promise((resolve) => setTimeout(() => resolve(user), 1000));
             return user;
         },
         users: (parent, args, context, info) => {
