@@ -1,0 +1,719 @@
+{
+    "fieldName": "channels",
+    "fieldNodes": [
+      {
+        "kind": "Field",
+        "alias": {
+          "kind": "Name",
+          "value": "channels",
+          "loc": {
+            "start": 1,
+            "end": 9
+          }
+        },
+        "name": {
+          "kind": "Name",
+          "value": "channels",
+          "loc": {
+            "start": 11,
+            "end": 19
+          }
+        },
+        "arguments": [],
+        "directives": [],
+        "selectionSet": {
+          "kind": "SelectionSet",
+          "selections": [
+            {
+              "kind": "Field",
+              "name": {
+                "kind": "Name",
+                "value": "id",
+                "loc": {
+                  "start": 20,
+                  "end": 22
+                }
+              },
+              "arguments": [],
+              "directives": [],
+              "loc": {
+                "start": 20,
+                "end": 22
+              }
+            },
+            {
+              "kind": "Field",
+              "name": {
+                "kind": "Name",
+                "value": "name",
+                "loc": {
+                  "start": 23,
+                  "end": 27
+                }
+              },
+              "arguments": [],
+              "directives": [],
+              "loc": {
+                "start": 23,
+                "end": 27
+              }
+            },
+            {
+              "kind": "Field",
+              "name": {
+                "kind": "Name",
+                "value": "channelType",
+                "loc": {
+                  "start": 28,
+                  "end": 39
+                }
+              },
+              "arguments": [],
+              "directives": [],
+              "loc": {
+                "start": 28,
+                "end": 39
+              }
+            },
+            {
+              "kind": "Field",
+              "name": {
+                "kind": "Name",
+                "value": "channelStatusId",
+                "loc": {
+                  "start": 40,
+                  "end": 55
+                }
+              },
+              "arguments": [],
+              "directives": [],
+              "loc": {
+                "start": 40,
+                "end": 55
+              }
+            },
+            {
+              "kind": "Field",
+              "name": {
+                "kind": "Name",
+                "value": "sender",
+                "loc": {
+                  "start": 56,
+                  "end": 62
+                }
+              },
+              "arguments": [],
+              "directives": [],
+              "loc": {
+                "start": 56,
+                "end": 62
+              }
+            },
+            {
+              "kind": "Field",
+              "name": {
+                "kind": "Name",
+                "value": "authKey",
+                "loc": {
+                  "start": 63,
+                  "end": 70
+                }
+              },
+              "arguments": [],
+              "directives": [],
+              "loc": {
+                "start": 63,
+                "end": 70
+              }
+            },
+            {
+              "kind": "Field",
+              "name": {
+                "kind": "Name",
+                "value": "host",
+                "loc": {
+                  "start": 71,
+                  "end": 75
+                }
+              },
+              "arguments": [],
+              "directives": [],
+              "loc": {
+                "start": 71,
+                "end": 75
+              }
+            },
+            {
+              "kind": "Field",
+              "name": {
+                "kind": "Name",
+                "value": "lastStarted",
+                "loc": {
+                  "start": 76,
+                  "end": 87
+                }
+              },
+              "arguments": [],
+              "directives": [],
+              "loc": {
+                "start": 76,
+                "end": 87
+              }
+            },
+            {
+              "kind": "Field",
+              "name": {
+                "kind": "Name",
+                "value": "lastPolled",
+                "loc": {
+                  "start": 88,
+                  "end": 98
+                }
+              },
+              "arguments": [],
+              "directives": [],
+              "loc": {
+                "start": 88,
+                "end": 98
+              }
+            },
+            {
+              "kind": "Field",
+              "name": {
+                "kind": "Name",
+                "value": "iterationRate",
+                "loc": {
+                  "start": 99,
+                  "end": 112
+                }
+              },
+              "arguments": [],
+              "directives": [],
+              "loc": {
+                "start": 99,
+                "end": 112
+              }
+            }
+          ],
+          "loc": {
+            "start": 19,
+            "end": 113
+          }
+        },
+        "loc": {
+          "start": 1,
+          "end": 113
+        }
+      }
+    ],
+    "returnType": "[Channel]",
+    "parentType": "Query",
+    "path": {
+      "key": "channels"
+    },
+    "schema": {
+      "_queryType": "Query",
+      "_mutationType": "Mutation",
+      "_subscriptionType": null,
+      "_directives": [
+        {
+          "name": "cacheControl",
+          "description": "",
+          "locations": [
+            "FIELD_DEFINITION",
+            "OBJECT",
+            "INTERFACE"
+          ],
+          "astNode": {
+            "kind": "DirectiveDefinition",
+            "name": {
+              "kind": "Name",
+              "value": "cacheControl",
+              "loc": {
+                "start": 1790,
+                "end": 1802
+              }
+            },
+            "arguments": [
+              {
+                "kind": "InputValueDefinition",
+                "name": {
+                  "kind": "Name",
+                  "value": "maxAge",
+                  "loc": {
+                    "start": 1803,
+                    "end": 1809
+                  }
+                },
+                "type": {
+                  "kind": "NamedType",
+                  "name": {
+                    "kind": "Name",
+                    "value": "Int",
+                    "loc": {
+                      "start": 1811,
+                      "end": 1814
+                    }
+                  },
+                  "loc": {
+                    "start": 1811,
+                    "end": 1814
+                  }
+                },
+                "directives": [],
+                "loc": {
+                  "start": 1803,
+                  "end": 1814
+                }
+              },
+              {
+                "kind": "InputValueDefinition",
+                "name": {
+                  "kind": "Name",
+                  "value": "scope",
+                  "loc": {
+                    "start": 1816,
+                    "end": 1821
+                  }
+                },
+                "type": {
+                  "kind": "NamedType",
+                  "name": {
+                    "kind": "Name",
+                    "value": "CacheControlScope",
+                    "loc": {
+                      "start": 1823,
+                      "end": 1840
+                    }
+                  },
+                  "loc": {
+                    "start": 1823,
+                    "end": 1840
+                  }
+                },
+                "directives": [],
+                "loc": {
+                  "start": 1816,
+                  "end": 1840
+                }
+              }
+            ],
+            "locations": [
+              {
+                "kind": "Name",
+                "value": "FIELD_DEFINITION",
+                "loc": {
+                  "start": 1845,
+                  "end": 1861
+                }
+              },
+              {
+                "kind": "Name",
+                "value": "OBJECT",
+                "loc": {
+                  "start": 1864,
+                  "end": 1870
+                }
+              },
+              {
+                "kind": "Name",
+                "value": "INTERFACE",
+                "loc": {
+                  "start": 1873,
+                  "end": 1882
+                }
+              }
+            ],
+            "loc": {
+              "start": 1779,
+              "end": 1882
+            }
+          },
+          "args": [
+            {
+              "name": "maxAge",
+              "description": "",
+              "type": "Int",
+              "astNode": {
+                "kind": "InputValueDefinition",
+                "name": {
+                  "kind": "Name",
+                  "value": "maxAge",
+                  "loc": {
+                    "start": 1803,
+                    "end": 1809
+                  }
+                },
+                "type": {
+                  "kind": "NamedType",
+                  "name": {
+                    "kind": "Name",
+                    "value": "Int",
+                    "loc": {
+                      "start": 1811,
+                      "end": 1814
+                    }
+                  },
+                  "loc": {
+                    "start": 1811,
+                    "end": 1814
+                  }
+                },
+                "directives": [],
+                "loc": {
+                  "start": 1803,
+                  "end": 1814
+                }
+              }
+            },
+            {
+              "name": "scope",
+              "description": "",
+              "type": "CacheControlScope",
+              "astNode": {
+                "kind": "InputValueDefinition",
+                "name": {
+                  "kind": "Name",
+                  "value": "scope",
+                  "loc": {
+                    "start": 1816,
+                    "end": 1821
+                  }
+                },
+                "type": {
+                  "kind": "NamedType",
+                  "name": {
+                    "kind": "Name",
+                    "value": "CacheControlScope",
+                    "loc": {
+                      "start": 1823,
+                      "end": 1840
+                    }
+                  },
+                  "loc": {
+                    "start": 1823,
+                    "end": 1840
+                  }
+                },
+                "directives": [],
+                "loc": {
+                  "start": 1816,
+                  "end": 1840
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "skip",
+          "description": "Directs the executor to skip this field or fragment when the `if` argument is true.",
+          "locations": [
+            "FIELD",
+            "FRAGMENT_SPREAD",
+            "INLINE_FRAGMENT"
+          ],
+          "args": [
+            {
+              "name": "if",
+              "description": "Skipped when true.",
+              "type": "Boolean!"
+            }
+          ]
+        },
+        {
+          "name": "include",
+          "description": "Directs the executor to include this field or fragment only when the `if` argument is true.",
+          "locations": [
+            "FIELD",
+            "FRAGMENT_SPREAD",
+            "INLINE_FRAGMENT"
+          ],
+          "args": [
+            {
+              "name": "if",
+              "description": "Included when true.",
+              "type": "Boolean!"
+            }
+          ]
+        },
+        {
+          "name": "deprecated",
+          "description": "Marks an element of a GraphQL schema as no longer supported.",
+          "locations": [
+            "FIELD_DEFINITION",
+            "ENUM_VALUE"
+          ],
+          "args": [
+            {
+              "name": "reason",
+              "description": "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted in [Markdown](https://daringfireball.net/projects/markdown/).",
+              "type": "String",
+              "defaultValue": "No longer supported"
+            }
+          ]
+        }
+      ],
+      "_typeMap": {
+        "Query": "Query",
+        "User": "User",
+        "ID": "ID",
+        "String": "String",
+        "Int": "Int",
+        "UserFromPg": "UserFromPg",
+        "Application": "Application",
+        "Menu": "Menu",
+        "Channel": "Channel",
+        "Mutation": "Mutation",
+        "__Schema": "__Schema",
+        "__Type": "__Type",
+        "__TypeKind": "__TypeKind",
+        "Boolean": "Boolean",
+        "__Field": "__Field",
+        "__InputValue": "__InputValue",
+        "__EnumValue": "__EnumValue",
+        "__Directive": "__Directive",
+        "__DirectiveLocation": "__DirectiveLocation",
+        "SourceSystem": "SourceSystem",
+        "ChannelStatus": "ChannelStatus",
+        "ChannelType": "ChannelType",
+        "Message": "Message",
+        "MessageStatus": "MessageStatus",
+        "NoContactList": "NoContactList",
+        "CacheControlScope": "CacheControlScope",
+        "Upload": "Upload"
+      },
+      "_implementations": {},
+      "__validationErrors": [],
+      "_extensionsEnabled": true
+    },
+    "fragments": {},
+    "operation": {
+      "kind": "OperationDefinition",
+      "operation": "query",
+      "variableDefinitions": [],
+      "directives": [],
+      "selectionSet": {
+        "kind": "SelectionSet",
+        "selections": [
+          {
+            "kind": "Field",
+            "alias": {
+              "kind": "Name",
+              "value": "channels",
+              "loc": {
+                "start": 1,
+                "end": 9
+              }
+            },
+            "name": {
+              "kind": "Name",
+              "value": "channels",
+              "loc": {
+                "start": 11,
+                "end": 19
+              }
+            },
+            "arguments": [],
+            "directives": [],
+            "selectionSet": {
+              "kind": "SelectionSet",
+              "selections": [
+                {
+                  "kind": "Field",
+                  "name": {
+                    "kind": "Name",
+                    "value": "id",
+                    "loc": {
+                      "start": 20,
+                      "end": 22
+                    }
+                  },
+                  "arguments": [],
+                  "directives": [],
+                  "loc": {
+                    "start": 20,
+                    "end": 22
+                  }
+                },
+                {
+                  "kind": "Field",
+                  "name": {
+                    "kind": "Name",
+                    "value": "name",
+                    "loc": {
+                      "start": 23,
+                      "end": 27
+                    }
+                  },
+                  "arguments": [],
+                  "directives": [],
+                  "loc": {
+                    "start": 23,
+                    "end": 27
+                  }
+                },
+                {
+                  "kind": "Field",
+                  "name": {
+                    "kind": "Name",
+                    "value": "channelType",
+                    "loc": {
+                      "start": 28,
+                      "end": 39
+                    }
+                  },
+                  "arguments": [],
+                  "directives": [],
+                  "loc": {
+                    "start": 28,
+                    "end": 39
+                  }
+                },
+                {
+                  "kind": "Field",
+                  "name": {
+                    "kind": "Name",
+                    "value": "channelStatusId",
+                    "loc": {
+                      "start": 40,
+                      "end": 55
+                    }
+                  },
+                  "arguments": [],
+                  "directives": [],
+                  "loc": {
+                    "start": 40,
+                    "end": 55
+                  }
+                },
+                {
+                  "kind": "Field",
+                  "name": {
+                    "kind": "Name",
+                    "value": "sender",
+                    "loc": {
+                      "start": 56,
+                      "end": 62
+                    }
+                  },
+                  "arguments": [],
+                  "directives": [],
+                  "loc": {
+                    "start": 56,
+                    "end": 62
+                  }
+                },
+                {
+                  "kind": "Field",
+                  "name": {
+                    "kind": "Name",
+                    "value": "authKey",
+                    "loc": {
+                      "start": 63,
+                      "end": 70
+                    }
+                  },
+                  "arguments": [],
+                  "directives": [],
+                  "loc": {
+                    "start": 63,
+                    "end": 70
+                  }
+                },
+                {
+                  "kind": "Field",
+                  "name": {
+                    "kind": "Name",
+                    "value": "host",
+                    "loc": {
+                      "start": 71,
+                      "end": 75
+                    }
+                  },
+                  "arguments": [],
+                  "directives": [],
+                  "loc": {
+                    "start": 71,
+                    "end": 75
+                  }
+                },
+                {
+                  "kind": "Field",
+                  "name": {
+                    "kind": "Name",
+                    "value": "lastStarted",
+                    "loc": {
+                      "start": 76,
+                      "end": 87
+                    }
+                  },
+                  "arguments": [],
+                  "directives": [],
+                  "loc": {
+                    "start": 76,
+                    "end": 87
+                  }
+                },
+                {
+                  "kind": "Field",
+                  "name": {
+                    "kind": "Name",
+                    "value": "lastPolled",
+                    "loc": {
+                      "start": 88,
+                      "end": 98
+                    }
+                  },
+                  "arguments": [],
+                  "directives": [],
+                  "loc": {
+                    "start": 88,
+                    "end": 98
+                  }
+                },
+                {
+                  "kind": "Field",
+                  "name": {
+                    "kind": "Name",
+                    "value": "iterationRate",
+                    "loc": {
+                      "start": 99,
+                      "end": 112
+                    }
+                  },
+                  "arguments": [],
+                  "directives": [],
+                  "loc": {
+                    "start": 99,
+                    "end": 112
+                  }
+                }
+              ],
+              "loc": {
+                "start": 19,
+                "end": 113
+              }
+            },
+            "loc": {
+              "start": 1,
+              "end": 113
+            }
+          }
+        ],
+        "loc": {
+          "start": 0,
+          "end": 114
+        }
+      },
+      "loc": {
+        "start": 0,
+        "end": 114
+      }
+    },
+    "variableValues": {},
+    "cacheControl": {
+      "cacheHint": {
+        "maxAge": 0
+      }
+    }
+  }

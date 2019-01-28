@@ -2,3 +2,5 @@
 graphql-server/node_modules/
 
 graphql-server/build/
+
+graphql-json-placeholder/node_modules/

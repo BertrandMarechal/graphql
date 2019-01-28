@@ -4,13 +4,106 @@ type User {
   email: String!
   age: Int
 }
+type UserFromPg {
+  id: ID!
+  name: String!
+  email: String!
+  applications: [Application]
+  menus: [Menu]
+}
+type Menu {
+  id: ID!
+  name: String!
+  link: String!
+  icon: String!
+}
+type Application {
+  id: ID!
+  name: String!
+}
+
+
 type Query {
+  usersFromPG: [User!]!
   users: [User!]!
-  users2: [User!]!
+  userFromPG(id: ID!): UserFromPg!
   user(id: ID!): User!
+
+  channels: [Channel]
 }
 type Mutation {
   createUser(id: ID!, name: String!, email: String!, age: Int): User!
   updateUser(id: ID!, name: String, email: String, age: Int): User!
   deleteUser(id: ID!): User!
+}
+
+type SourceSystem {
+  id: ID!
+  name: String!
+}
+type ChannelStatus {
+  id: ID!
+  name: String!
+}
+type ChannelType {
+  id: ID!
+  name: String!
+  incoming: Boolean
+  outgoing: Boolean
+}
+type Channel {
+  id: ID!
+  name: String!
+  channelType: ID!
+  channelStatusId: ID!
+  sender: String
+  authKey: String
+  host: String
+  lastStarted: Int
+  lastPolled: Int
+  iterationRate: Int
+}
+
+type Message {
+  id: ID!
+  sourceSystemId: ID!
+  channelId: ID!
+  messageStatusId: ID!
+  templateId: ID!
+  part: Int
+  externalRef: String
+  considerOnlyAfter: Int
+  retryCount: Int
+  retryMax: Int
+  lastProcessed: Int
+  recipients: String
+  priority: Int
+  subject: String
+  body: String
+  sender: String
+  statusLog: String
+  brand: String
+  userId: Int
+  channelTypeId: ID!
+  eventType: String
+  doNotContact: Boolean
+  greeting: String
+  messageGuid: String
+  extractedForSending: Boolean
+}
+
+type MessageStatus {
+  id: ID!
+  name: String!
+  moveToArchive: Boolean
+  considerRetry: Boolean
+  cancellable: Boolean
+}
+
+type NoContactList {
+  id: ID!
+  sourceSystemId: ID
+  brandId: ID
+  channelTypeId: ID
+  addresses: String
 }
