@@ -100,19 +100,19 @@ type Query {
 	getUsers(first: Int,after: Int): UserPaginated
 	getUser(id: ID!): User
 
-	getComments(first: Int,after: Int): CommentPaginated
+	getComments(first: Int,after: Int,postId: ID): CommentPaginated
 	getComment(id: ID!): Comment
 
-	getPhotos(first: Int,after: Int): PhotoPaginated
+	getPhotos(first: Int,after: Int,albumId: ID): PhotoPaginated
 	getPhoto(id: ID!): Photo
 
-	getPosts(first: Int,after: Int): PostPaginated
+	getPosts(first: Int,after: Int,userId: ID): PostPaginated
 	getPost(id: ID!): Post
 
-	getTodos(first: Int,after: Int): TodoPaginated
+	getTodos(first: Int,after: Int,userId: ID): TodoPaginated
 	getTodo(id: ID!): Todo
 
-	getAlbums(first: Int,after: Int): AlbumPaginated
+	getAlbums(first: Int,after: Int,userId: ID): AlbumPaginated
 	getAlbum(id: ID!): Album
 }
 

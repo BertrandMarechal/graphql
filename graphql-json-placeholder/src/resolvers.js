@@ -16,35 +16,35 @@ const resolvers = {
                 },
 		getUser: (parent, {id}, context, info) => { id = +id; return _users.find(item => item.id === id); },
 
-		getComments: (parent, {first = 100, after = 0}, context, info) => { return {
+		getComments: (parent, {first = 100, after = 0, postId}, context, info) => { return {
                     totalCount: _comments.length, comments: _comments.slice(after, first).map(item => {
                             return {...item, post: _posts.find(({id}) => id === item.postId)};
                         })};
                 },
 		getComment: (parent, {id}, context, info) => { id = +id; return _comments.find(item => item.id === id); },
 
-		getPhotos: (parent, {first = 100, after = 0}, context, info) => { return {
+		getPhotos: (parent, {first = 100, after = 0, albumId}, context, info) => { return {
                     totalCount: _photos.length, photos: _photos.slice(after, first).map(item => {
                             return {...item, album: _albums.find(({id}) => id === item.albumId)};
                         })};
                 },
 		getPhoto: (parent, {id}, context, info) => { id = +id; return _photos.find(item => item.id === id); },
 
-		getPosts: (parent, {first = 100, after = 0}, context, info) => { return {
+		getPosts: (parent, {first = 100, after = 0, userId}, context, info) => { return {
                     totalCount: _posts.length, posts: _posts.slice(after, first).map(item => {
                             return {...item, user: _users.find(({id}) => id === item.userId)};
                         })};
                 },
 		getPost: (parent, {id}, context, info) => { id = +id; return _posts.find(item => item.id === id); },
 
-		getTodos: (parent, {first = 100, after = 0}, context, info) => { return {
+		getTodos: (parent, {first = 100, after = 0, userId}, context, info) => { return {
                     totalCount: _todos.length, todos: _todos.slice(after, first).map(item => {
                             return {...item, user: _users.find(({id}) => id === item.userId)};
                         })};
                 },
 		getTodo: (parent, {id}, context, info) => { id = +id; return _todos.find(item => item.id === id); },
 
-		getAlbums: (parent, {first = 100, after = 0}, context, info) => { return {
+		getAlbums: (parent, {first = 100, after = 0, userId}, context, info) => { return {
                     totalCount: _albums.length, albums: _albums.slice(after, first).map(item => {
                             return {...item, user: _users.find(({id}) => id === item.userId)};
                         })};

@@ -187,10 +187,15 @@ const check = async () => {
     const queriesAsWeWantIt = `type Query {\n` + typeKeys
         .filter(type => typesFromObjects[type].__level === 1)
         .map(type => {
+            const properties = Object.keys(typesFromObjects[type]);
+            const queryPropertiesAsArray = properties
+                .filter(property => property.indexOf('__') === -1)
+                // we get only the query fields
+                .filter(property => property.indexOf('query_') === 0);
             const queries = [
                 {
                     operationName: `get${type}s`,
-                    arguments: [{ name: 'first', type: 'Int' }, { name: 'after', type: 'Int' }],
+                    arguments: [{ name: 'first', type: 'Int' }, { name: 'after', type: 'Int' }, ...queryPropertiesAsArray.map(prop => ({name: prop.replace('query_', '') + 'Id', type: 'ID'}))],
                     returnType: `${type}Paginated`
                 },
                 {
@@ -216,7 +221,7 @@ const check = async () => {
                 .filter(property => property.indexOf('query_') === 0);
             
             return [
-                `\t\tget${type}s: (parent, {first = 100, after = 0}, context, info) => { return {
+                `\t\tget${type}s: (parent, {first = 100, after = 0${queryPropertiesAsArray.length === 0 ? '' : ', ' + queryPropertiesAsArray.map(prop => prop.replace('query_', '') + 'Id').join(', ')}}, context, info) => { return {
                     totalCount: _${type.toLowerCase()}s.length, ${type.toLowerCase()}s: _${type.toLowerCase()}s.slice(after, first)${
                         // if we have query properties, then we have to get the sub objects
                         queryPropertiesAsArray.length === 0 ? '' : `.map(item => {
