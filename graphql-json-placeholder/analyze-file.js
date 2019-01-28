@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const types = ['user', 'comment', 'photo', 'post', 'todo'];
+const types = ['user', 'comment', 'photo', 'post', 'todo', 'album'];
+
+const defaultTypes = ['String', 'ID', 'Int', 'Float', 'Boolean'];
 
 const mapType = (obj, objName, parentName) => {
     const name = parentName ? `${parentName}.${objName}` : objName;
@@ -11,7 +13,6 @@ const mapType = (obj, objName, parentName) => {
         }];
     }
     if (Array.isArray(obj)) {
-        console.log('array');
         const mappedType = mapType(obj[0], objName, parentName);
         return [{
             name: name,
@@ -125,24 +126,65 @@ const check = async () => {
         });
     }
 
-    let typesAsWeWantIt = Object
-        .keys(typesFromObjects)
+    // replace the objects under the format <something>Id with the something for mutations
+    const typeKeys = Object.keys(typesFromObjects);
+    for (let i = 0; i < typeKeys.length; i++) {
+        const key = typeKeys[i];
+        const typeSubKeysWithProperTypes = Object
+            .keys(typesFromObjects[key])
+            .filter(key => /[a-z]+Id$/.test(key));
+        if (typeSubKeysWithProperTypes.length > 0) {
+            for (let j = 0; j < typeSubKeysWithProperTypes.length; j++) {
+                const subKey = typeSubKeysWithProperTypes[j];
+                const type = subKey.substr(0, 1).toUpperCase() + subKey.substr(1, subKey.length - 3);
+                const isToReplace = typeKeys.indexOf(type) > -1;
+                if (isToReplace) {
+                    delete typesFromObjects[key][subKey];
+                    typesFromObjects[key][`mutation_${subKey}`] = 'ID!';
+                    typesFromObjects[key][`query_${type.toLowerCase()}`] = type + '!';
+                }
+            }
+        }
+    }
+    
+    let typesAsWeWantIt = typeKeys
         .map(type => {
             const properties = Object.keys(typesFromObjects[type])
             const propertiesAsString = properties
                 .filter(property => property.indexOf('__') === -1)
-                .map(property => `\t${property}: ${typesFromObjects[type][property]}`).join('\n');
+                // we remove the mutation fields
+                .filter(property => property.indexOf('mutation_') === -1)
+                .map(property => `\t${property.replace('query_', '')}: ${typesFromObjects[type][property]}`).join('\n');
             return `type ${type} {\n${propertiesAsString}\n}`;
         }).join('\n');
-    typesAsWeWantIt += '\n' + Object
-        .keys(typesFromObjects)
+    
+    // paginated types for get arrays
+    typesAsWeWantIt += '\n' + typeKeys
         .filter(type => typesFromObjects[type].__level === 1)
         .map(type => {
             return `type ${type}Paginated {\n\ttotalCount: Int, \n\t${type.toLowerCase()}s: [${type}]!\n}`;
         }).join('\n');
+    
+    // input types for inputs
+    typesAsWeWantIt += '\n' + typeKeys
+        .filter(type => typesFromObjects[type].__level > 1)
+        .map(type => {
+            const properties = Object.keys(typesFromObjects[type])
+            const propertiesAsString = properties
+                .filter(property => property.indexOf('__') === -1)
+                // we remove the query fields
+                .filter(property => property.indexOf('query_') === -1)
+                .map(property => {
+                    const regexResult = /[a-z]+/gi.exec(typesFromObjects[type][property]);
+                    if (regexResult && defaultTypes.indexOf(regexResult[0]) === -1) {
+                        return `\t${property.replace('mutation_', '')}: ${typesFromObjects[type][property].replace(regexResult[0], `${regexResult[0]}Input`)}`;
+                    }
+                    return `\t${property.replace('mutation_', '')}: ${typesFromObjects[type][property]}`;
+                }).join('\n');
+            return `input ${type}Input {\n${propertiesAsString}\n}`;
+        }).join('\n');
 
-    const queriesAsWeWantIt = `type Query {\n` + Object
-        .keys(typesFromObjects)
+    const queriesAsWeWantIt = `type Query {\n` + typeKeys
         .filter(type => typesFromObjects[type].__level === 1)
         .map(type => {
             const queries = [
@@ -158,31 +200,50 @@ const check = async () => {
                 },
             ];
             return queries.map(operation => {
-
                 return `\t${operation.operationName}${
                     operation.arguments.length === 0 ? '' : `(${operation.arguments.map(argument => `${argument.name}: ${argument.type}`)})`
                     }: ${operation.returnType}`;
             }).join('\n')
         }).join('\n\n') + `\n}`;
 
-    const queriesForResolverAsWeWantIt = `\tQuery: {\n` + Object
-        .keys(typesFromObjects)
+    const queriesForResolverAsWeWantIt = `\tQuery: {\n` + typeKeys
         .filter(type => typesFromObjects[type].__level === 1)
         .map(type => {
+            const properties = Object.keys(typesFromObjects[type]);
+            const queryPropertiesAsArray = properties
+                .filter(property => property.indexOf('__') === -1)
+                // we get only the query fields
+                .filter(property => property.indexOf('query_') === 0);
+            
             return [
-                `\t\tget${type}s: (parent, {first = 0, after = 100}, context, info) => { return _${type.toLowerCase()}s.slice(after, first); }`,
-                `\t\tget${type}: (parent, {id}, context, info) => { return _${type.toLowerCase()}s.find(item => item.id === id); }`,
+                `\t\tget${type}s: (parent, {first = 100, after = 0}, context, info) => { return {
+                    totalCount: _${type.toLowerCase()}s.length, ${type.toLowerCase()}s: _${type.toLowerCase()}s.slice(after, first)${
+                        // if we have query properties, then we have to get the sub objects
+                        queryPropertiesAsArray.length === 0 ? '' : `.map(item => {
+                            return {...item, ${
+                                queryPropertiesAsArray
+                                    .map(prop => {
+                                        const itemName = prop
+                                            .replace('query_', '')
+                                            .replace('Id', '');
+                                        return `${itemName}: _${itemName}s.find(({id}) => id === item.${itemName}Id)`;
+                                    })}};
+                        })`
+                    }};
+                }`,
+                `\t\tget${type}: (parent, {id}, context, info) => { id = +id; return _${type.toLowerCase()}s.find(item => item.id === id); }`,
             ].join(',\n')
         }).join(',\n\n') + `\n\t}`;
 
-    const mutationsAsWeWantIt = `type Mutation {\n` + Object
-        .keys(typesFromObjects)
+    const mutationsAsWeWantIt = `type Mutation {\n` + typeKeys
         .filter(type => typesFromObjects[type].__level === 1)
         .map(type => {
             const properties = Object.keys(typesFromObjects[type]);
             const propertiesAsArray = properties
                 .filter(property => property.indexOf('__') === -1)
-                .map(property => ({ name: property, type: typesFromObjects[type][property] }));
+                // we remove the query fields
+                .filter(property => property.indexOf('query_') === -1)
+                .map(property => ({ name: property.replace('mutation_', ''), type: typesFromObjects[type][property] }));
 
             const mutations = [
                 {
@@ -203,7 +264,13 @@ const check = async () => {
             ];
             return mutations.map(operation => {
                 return `\t${operation.operationName}${
-                    operation.arguments.length === 0 ? '' : `(${operation.arguments.map(argument => `${argument.name}: ${argument.type}`).join(', ')})`
+                    operation.arguments.length === 0 ? '' : `(${operation.arguments.map(argument => {
+                        const regexResult = /[a-z]+/gi.exec(argument.type);
+                        if (regexResult && defaultTypes.indexOf(regexResult[0]) === -1) {
+                            return `\t${argument.name}: ${argument.type.replace(regexResult[0], `${regexResult[0]}Input`)}`;
+                        }
+                        return `${argument.name}: ${argument.type}`
+                    }).join(', ')})`
                     }: ${operation.returnType}`;
             }).join('\n')
         }).join('\n\n') + `\n}`;
@@ -215,7 +282,9 @@ const check = async () => {
             const properties = Object.keys(typesFromObjects[type]);
             const propertiesAsArray = properties
                 .filter(property => property.indexOf('__') === -1)
-                .map(property => ({ name: property, type: typesFromObjects[type][property] }));
+                // we remove the query fields
+                .filter(property => property.indexOf('query_') === -1)
+                .map(property => ({ name: property.replace('mutation_', ''), type: typesFromObjects[type][property] }));
 
             return [
                 `\t\tupdate${type}: (parent, {${propertiesAsArray.map(x => x.name).join(', ')}}, context, info) => {
@@ -252,7 +321,7 @@ ${
     Object
         .keys(typesFromObjects)
         .filter(type => typesFromObjects[type].__level === 1)
-        .map(type => `const _${type.toLowerCase()}s = fs.readFileSync(path.resolve(__dirname, '../data/${type.toLowerCase()}s.json'))`)
+        .map(type => `const _${type.toLowerCase()}s = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../data/${type.toLowerCase()}s.json')).toString('ascii'))`)
         .join('\n')
 }
 
@@ -262,8 +331,6 @@ ${mutationsForResolverAsWeWantIt},
 };
 export default resolvers;
     `;
-
-
     await new Promise(resolve => fs.writeFile(path.resolve(__dirname, './src/schema.graphql'), typesAsWeWantIt + '\n\n' + queriesAsWeWantIt + '\n\n' + mutationsAsWeWantIt, resolve));
     await new Promise(resolve => fs.writeFile(path.resolve(__dirname, './src/resolvers.js'), resolvers, resolve));
 }

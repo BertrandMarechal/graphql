@@ -2,28 +2,54 @@
 const fs = require('fs');
 const path = require('path');
 
-const _users = fs.readFileSync(path.resolve(__dirname, '../data/users.json'))
-const _comments = fs.readFileSync(path.resolve(__dirname, '../data/comments.json'))
-const _photos = fs.readFileSync(path.resolve(__dirname, '../data/photos.json'))
-const _posts = fs.readFileSync(path.resolve(__dirname, '../data/posts.json'))
-const _todos = fs.readFileSync(path.resolve(__dirname, '../data/todos.json'))
+const _users = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../data/users.json')).toString('ascii'))
+const _comments = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../data/comments.json')).toString('ascii'))
+const _photos = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../data/photos.json')).toString('ascii'))
+const _posts = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../data/posts.json')).toString('ascii'))
+const _todos = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../data/todos.json')).toString('ascii'))
+const _albums = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../data/albums.json')).toString('ascii'))
 
 const resolvers = {
 	Query: {
-		getUsers: (parent, {first = 0, after = 100}, context, info) => { return _users.slice(after, first); },
-		getUser: (parent, {id}, context, info) => { return _users.find(item => item.id === id); },
+		getUsers: (parent, {first = 100, after = 0}, context, info) => { return {
+                    totalCount: _users.length, users: _users.slice(after, first)};
+                },
+		getUser: (parent, {id}, context, info) => { id = +id; return _users.find(item => item.id === id); },
 
-		getComments: (parent, {first = 0, after = 100}, context, info) => { return _comments.slice(after, first); },
-		getComment: (parent, {id}, context, info) => { return _comments.find(item => item.id === id); },
+		getComments: (parent, {first = 100, after = 0}, context, info) => { return {
+                    totalCount: _comments.length, comments: _comments.slice(after, first).map(item => {
+                            return {...item, post: _posts.find(({id}) => id === item.postId)};
+                        })};
+                },
+		getComment: (parent, {id}, context, info) => { id = +id; return _comments.find(item => item.id === id); },
 
-		getPhotos: (parent, {first = 0, after = 100}, context, info) => { return _photos.slice(after, first); },
-		getPhoto: (parent, {id}, context, info) => { return _photos.find(item => item.id === id); },
+		getPhotos: (parent, {first = 100, after = 0}, context, info) => { return {
+                    totalCount: _photos.length, photos: _photos.slice(after, first).map(item => {
+                            return {...item, album: _albums.find(({id}) => id === item.albumId)};
+                        })};
+                },
+		getPhoto: (parent, {id}, context, info) => { id = +id; return _photos.find(item => item.id === id); },
 
-		getPosts: (parent, {first = 0, after = 100}, context, info) => { return _posts.slice(after, first); },
-		getPost: (parent, {id}, context, info) => { return _posts.find(item => item.id === id); },
+		getPosts: (parent, {first = 100, after = 0}, context, info) => { return {
+                    totalCount: _posts.length, posts: _posts.slice(after, first).map(item => {
+                            return {...item, user: _users.find(({id}) => id === item.userId)};
+                        })};
+                },
+		getPost: (parent, {id}, context, info) => { id = +id; return _posts.find(item => item.id === id); },
 
-		getTodos: (parent, {first = 0, after = 100}, context, info) => { return _todos.slice(after, first); },
-		getTodo: (parent, {id}, context, info) => { return _todos.find(item => item.id === id); }
+		getTodos: (parent, {first = 100, after = 0}, context, info) => { return {
+                    totalCount: _todos.length, todos: _todos.slice(after, first).map(item => {
+                            return {...item, user: _users.find(({id}) => id === item.userId)};
+                        })};
+                },
+		getTodo: (parent, {id}, context, info) => { id = +id; return _todos.find(item => item.id === id); },
+
+		getAlbums: (parent, {first = 100, after = 0}, context, info) => { return {
+                    totalCount: _albums.length, albums: _albums.slice(after, first).map(item => {
+                            return {...item, user: _users.find(({id}) => id === item.userId)};
+                        })};
+                },
+		getAlbum: (parent, {id}, context, info) => { id = +id; return _albums.find(item => item.id === id); }
 	},
 	Mutation: {
 		updateUser: (parent, {id, name, username, email, address, phone, website, company}, context, info) => {
@@ -64,14 +90,14 @@ const resolvers = {
                     return _item;
                 },
 
-		updateComment: (parent, {postId, id, name, email, body}, context, info) => {
+		updateComment: (parent, {id, name, email, body, postId}, context, info) => {
                     const _item = _comments.find(_item => _item.id === id);
                     if (_item) {
-                        _item.postId = postId;
-			_item.id = id;
+                        _item.id = id;
 			_item.name = name;
 			_item.email = email;
 			_item.body = body;
+			_item.postId = postId;
                     }
                     return _item;
                 },
@@ -82,28 +108,28 @@ const resolvers = {
                     }
                     return null;
                 },
-		insertComment: (parent, {postId, id, name, email, body}, context, info) => {
+		insertComment: (parent, {id, name, email, body, postId}, context, info) => {
                     let _item = _comments.find(_item => _item.id === id);
                     if (!_item) {
                         _item = {};
-                        _item.postId = postId;
-			_item.id = id;
+                        _item.id = id;
 			_item.name = name;
 			_item.email = email;
-			_item.body = body
+			_item.body = body;
+			_item.postId = postId
                         _comments.push(_item);
                     }
                     return _item;
                 },
 
-		updatePhoto: (parent, {albumId, id, title, url, thumbnailUrl}, context, info) => {
+		updatePhoto: (parent, {id, title, url, thumbnailUrl, albumId}, context, info) => {
                     const _item = _photos.find(_item => _item.id === id);
                     if (_item) {
-                        _item.albumId = albumId;
-			_item.id = id;
+                        _item.id = id;
 			_item.title = title;
 			_item.url = url;
 			_item.thumbnailUrl = thumbnailUrl;
+			_item.albumId = albumId;
                     }
                     return _item;
                 },
@@ -114,27 +140,27 @@ const resolvers = {
                     }
                     return null;
                 },
-		insertPhoto: (parent, {albumId, id, title, url, thumbnailUrl}, context, info) => {
+		insertPhoto: (parent, {id, title, url, thumbnailUrl, albumId}, context, info) => {
                     let _item = _photos.find(_item => _item.id === id);
                     if (!_item) {
                         _item = {};
-                        _item.albumId = albumId;
-			_item.id = id;
+                        _item.id = id;
 			_item.title = title;
 			_item.url = url;
-			_item.thumbnailUrl = thumbnailUrl
+			_item.thumbnailUrl = thumbnailUrl;
+			_item.albumId = albumId
                         _photos.push(_item);
                     }
                     return _item;
                 },
 
-		updatePost: (parent, {userId, id, title, body}, context, info) => {
+		updatePost: (parent, {id, title, body, userId}, context, info) => {
                     const _item = _posts.find(_item => _item.id === id);
                     if (_item) {
-                        _item.userId = userId;
-			_item.id = id;
+                        _item.id = id;
 			_item.title = title;
 			_item.body = body;
+			_item.userId = userId;
                     }
                     return _item;
                 },
@@ -145,26 +171,26 @@ const resolvers = {
                     }
                     return null;
                 },
-		insertPost: (parent, {userId, id, title, body}, context, info) => {
+		insertPost: (parent, {id, title, body, userId}, context, info) => {
                     let _item = _posts.find(_item => _item.id === id);
                     if (!_item) {
                         _item = {};
-                        _item.userId = userId;
-			_item.id = id;
+                        _item.id = id;
 			_item.title = title;
-			_item.body = body
+			_item.body = body;
+			_item.userId = userId
                         _posts.push(_item);
                     }
                     return _item;
                 },
 
-		updateTodo: (parent, {userId, id, title, completed}, context, info) => {
+		updateTodo: (parent, {id, title, completed, userId}, context, info) => {
                     const _item = _todos.find(_item => _item.id === id);
                     if (_item) {
-                        _item.userId = userId;
-			_item.id = id;
+                        _item.id = id;
 			_item.title = title;
 			_item.completed = completed;
+			_item.userId = userId;
                     }
                     return _item;
                 },
@@ -175,15 +201,43 @@ const resolvers = {
                     }
                     return null;
                 },
-		insertTodo: (parent, {userId, id, title, completed}, context, info) => {
+		insertTodo: (parent, {id, title, completed, userId}, context, info) => {
                     let _item = _todos.find(_item => _item.id === id);
                     if (!_item) {
                         _item = {};
-                        _item.userId = userId;
-			_item.id = id;
+                        _item.id = id;
 			_item.title = title;
-			_item.completed = completed
+			_item.completed = completed;
+			_item.userId = userId
                         _todos.push(_item);
+                    }
+                    return _item;
+                },
+
+		updateAlbum: (parent, {id, title, userId}, context, info) => {
+                    const _item = _albums.find(_item => _item.id === id);
+                    if (_item) {
+                        _item.id = id;
+			_item.title = title;
+			_item.userId = userId;
+                    }
+                    return _item;
+                },
+		deleteAlbum: (parent, {id}, context, info) => {
+                    const itemIndex = _albums.findIndex(_item => _item.id === id);
+                    if (itemIndex > -1) {
+                        return _albums.splice(itemIndex, 1)[0];
+                    }
+                    return null;
+                },
+		insertAlbum: (parent, {id, title, userId}, context, info) => {
+                    let _item = _albums.find(_item => _item.id === id);
+                    if (!_item) {
+                        _item = {};
+                        _item.id = id;
+			_item.title = title;
+			_item.userId = userId
+                        _albums.push(_item);
                     }
                     return _item;
                 }
