@@ -2,40 +2,40 @@ type User {
 	id: ID!
 	name: String!
 	username: String!
-	email: String!
-	address: Address!
-	phone: String!
-	website: String!
-	company: Company!
+	email: String
+	address: Address
+	phone: String
+	website: String
+	company: Company
 }
 type Address {
-	street: String!
-	suite: String!
-	city: String!
-	zipcode: String!
-	geo: Geo!
+	street: String
+	suite: String
+	city: String
+	zipcode: String
+	geo: Geo
 }
 type Geo {
-	lat: Float!
-	lng: Float!
+	lat: Float
+	lng: Float
 }
 type Company {
-	name: String!
-	catchPhrase: String!
-	bs: String!
+	name: String
+	catchPhrase: String
+	bs: String
 }
 type Comment {
 	id: ID!
 	name: String!
 	email: String!
-	body: String!
+	body: String
 	post: Post!
 }
 type Photo {
 	id: ID!
 	title: String!
 	url: String!
-	thumbnailUrl: String!
+	thumbnailUrl: String
 	album: Album!
 }
 type Post {
@@ -80,20 +80,20 @@ type AlbumPaginated {
 	albums: [Album]!
 }
 input AddressInput {
-	street: String!
-	suite: String!
-	city: String!
-	zipcode: String!
-	geo: GeoInput!
+	street: String
+	suite: String
+	city: String
+	zipcode: String
+	geo: GeoInput
 }
 input GeoInput {
-	lat: Float!
-	lng: Float!
+	lat: Float
+	lng: Float
 }
 input CompanyInput {
-	name: String!
-	catchPhrase: String!
-	bs: String!
+	name: String
+	catchPhrase: String
+	bs: String
 }
 
 type Query {
@@ -117,27 +117,27 @@ type Query {
 }
 
 type Mutation {
-	updateUser(id: ID!, name: String!, username: String!, email: String!, 	address: AddressInput!, phone: String!, website: String!, 	company: CompanyInput!): User!
+	updateUser(id: ID!, name: String!, username: String!, email: String, 	address: AddressInput, phone: String, website: String, 	company: CompanyInput): User!
 	deleteUser(id: ID!): User!
-	insertUser(id: ID!, name: String!, username: String!, email: String!, 	address: AddressInput!, phone: String!, website: String!, 	company: CompanyInput!): User!
+	insertUser(name: String!, username: String!, email: String, 	address: AddressInput, phone: String, website: String, 	company: CompanyInput): User!
 
-	updateComment(id: ID!, name: String!, email: String!, body: String!, postId: ID!): Comment!
+	updateComment(id: ID!, name: String!, email: String!, body: String, postId: ID!): Comment!
 	deleteComment(id: ID!): Comment!
-	insertComment(id: ID!, name: String!, email: String!, body: String!, postId: ID!): Comment!
+	insertComment(name: String!, email: String!, body: String, postId: ID!): Comment!
 
-	updatePhoto(id: ID!, title: String!, url: String!, thumbnailUrl: String!, albumId: ID!): Photo!
+	updatePhoto(id: ID!, title: String!, url: String!, thumbnailUrl: String, albumId: ID!): Photo!
 	deletePhoto(id: ID!): Photo!
-	insertPhoto(id: ID!, title: String!, url: String!, thumbnailUrl: String!, albumId: ID!): Photo!
+	insertPhoto(title: String!, url: String!, thumbnailUrl: String, albumId: ID!): Photo!
 
 	updatePost(id: ID!, title: String!, body: String!, userId: ID!): Post!
 	deletePost(id: ID!): Post!
-	insertPost(id: ID!, title: String!, body: String!, userId: ID!): Post!
+	insertPost(title: String!, body: String!, userId: ID!): Post!
 
 	updateTodo(id: ID!, title: String!, completed: Boolean!, userId: ID!): Todo!
 	deleteTodo(id: ID!): Todo!
-	insertTodo(id: ID!, title: String!, completed: Boolean!, userId: ID!): Todo!
+	insertTodo(title: String!, completed: Boolean!, userId: ID!): Todo!
 
 	updateAlbum(id: ID!, title: String!, userId: ID!): Album!
 	deleteAlbum(id: ID!): Album!
-	insertAlbum(id: ID!, title: String!, userId: ID!): Album!
+	insertAlbum(title: String!, userId: ID!): Album!
 }

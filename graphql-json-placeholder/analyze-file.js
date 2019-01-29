@@ -1,8 +1,11 @@
 const fs = require('fs');
 const path = require('path');
-const types = ['user', 'comment', 'photo', 'post', 'todo', 'album'];
 
+const types = ['user', 'comment', 'photo', 'post', 'todo', 'album'];
 const defaultTypes = ['String', 'ID', 'Int', 'Float', 'Boolean'];
+const idFieldName = 'id';
+const capitalizedIdFieldName = idFieldName.substr(0, 1).toUpperCase() + idFieldName.substr(1);
+const mandatoryPropertiesCount = 2;
 
 const mapType = (obj, objName, parentName) => {
     const name = parentName ? `${parentName}.${objName}` : objName;
@@ -42,7 +45,8 @@ const mapType = (obj, objName, parentName) => {
             type: 'String'
         }];
     } else if (typeof obj === 'number' || !isNaN(+obj)) {
-        if (/id$/i.test(objName)) {
+        const regex = new RegExp(idFieldName + '$', 'i');
+        if (regex.test(objName)) {
             return [{
                 name: name,
                 type: 'ID'
@@ -58,9 +62,11 @@ const mapType = (obj, objName, parentName) => {
 const getTypes = (returnObject, globalCount) => {
     const keys = Object.keys(returnObject);
 
+    let mandatoryCurrentCount = mandatoryPropertiesCount;
     const subTypes = keys.reduce((aggregated, current) => {
         const currentSplit = current.split('.');
         const level = currentSplit.length - 1;
+        const idRegex = new RegExp('\.id|[a-zA-Z]+Id$');
         let objectNameCapitalized = currentSplit[currentSplit.length - 2];
         objectNameCapitalized = `${objectNameCapitalized.substr(0, 1).toUpperCase()}${objectNameCapitalized.substr(1)}`;
 
@@ -70,8 +76,15 @@ const getTypes = (returnObject, globalCount) => {
             };
         }
         let type = returnObject[current].type;
-        if (returnObject[current].count === globalCount) {
-            type = type + '!';
+        // we only get the 'mandatoryPropertiesCount' first properties
+        if (level == 1) {
+            if (mandatoryCurrentCount > 0 && returnObject[current].count === globalCount && !idRegex.test(current)) {
+                type = type + '!';
+                mandatoryCurrentCount--;
+            }
+            else if (idRegex.test(current)) {
+                type = type + '!';
+            }
         }
         aggregated[objectNameCapitalized][currentSplit[currentSplit.length - 1]] = type;
         if (level > 1) {
@@ -125,14 +138,17 @@ const check = async () => {
             })
         });
     }
+    
 
     // replace the objects under the format <something>Id with the something for mutations
     const typeKeys = Object.keys(typesFromObjects);
     for (let i = 0; i < typeKeys.length; i++) {
         const key = typeKeys[i];
+        const regex = new RegExp(`[a-z]+${capitalizedIdFieldName}$`);
+        
         const typeSubKeysWithProperTypes = Object
             .keys(typesFromObjects[key])
-            .filter(key => /[a-z]+Id$/.test(key));
+            .filter(key => regex.test(key));
         if (typeSubKeysWithProperTypes.length > 0) {
             for (let j = 0; j < typeSubKeysWithProperTypes.length; j++) {
                 const subKey = typeSubKeysWithProperTypes[j];
@@ -192,15 +208,16 @@ const check = async () => {
                 .filter(property => property.indexOf('__') === -1)
                 // we get only the query fields
                 .filter(property => property.indexOf('query_') === 0);
+                
             const queries = [
                 {
                     operationName: `get${type}s`,
-                    arguments: [{ name: 'first', type: 'Int' }, { name: 'after', type: 'Int' }, ...queryPropertiesAsArray.map(prop => ({name: prop.replace('query_', '') + 'Id', type: 'ID'}))],
+                    arguments: [{ name: 'first', type: 'Int' }, { name: 'after', type: 'Int' }, ...queryPropertiesAsArray.map(prop => ({name: prop.replace('query_', '') + capitalizedIdFieldName, type: 'ID'}))],
                     returnType: `${type}Paginated`
                 },
                 {
                     operationName: `get${type}`,
-                    arguments: [{ name: 'id', type: 'ID!' }],
+                    arguments: [{ name: idFieldName, type: 'ID!' }],
                     returnType: `${type}`
                 },
             ];
@@ -218,27 +235,46 @@ const check = async () => {
             const queryPropertiesAsArray = properties
                 .filter(property => property.indexOf('__') === -1)
                 // we get only the query fields
-                .filter(property => property.indexOf('query_') === 0);
+                .filter(property => property.indexOf('query_') === 0);                
             
             return [
-                `\t\tget${type}s: (parent, {first = 100, after = 0${queryPropertiesAsArray.length === 0 ? '' : ', ' + queryPropertiesAsArray.map(prop => prop.replace('query_', '') + 'Id').join(', ')}}, context, info) => { return {
-                    totalCount: _${type.toLowerCase()}s.length, ${type.toLowerCase()}s: _${type.toLowerCase()}s.slice(after, first)${
-                        // if we have query properties, then we have to get the sub objects
-                        queryPropertiesAsArray.length === 0 ? '' : `.map(item => {
-                            return {...item, ${
-                                queryPropertiesAsArray
-                                    .map(prop => {
-                                        const itemName = prop
-                                            .replace('query_', '')
-                                            .replace('Id', '');
-                                        return `${itemName}: _${itemName}s.find(({id}) => id === item.${itemName}Id)`;
-                                    })}};
-                        })`
-                    }};
+                `\t\tget${type}s: (parent, {first = 100, after = 0${queryPropertiesAsArray.length === 0 ? '' : ', ' + queryPropertiesAsArray.map(prop => prop.replace('query_', '') + capitalizedIdFieldName).join(', ')}}, context, info) => {
+                    ${
+                        // intergerify the IDs
+                        queryPropertiesAsArray.length === 0 ? '' : queryPropertiesAsArray.map(prop => prop.replace('query_', '') + capitalizedIdFieldName + ' = +' + prop.replace('query_', '') + capitalizedIdFieldName + ';').join('\n')
+                    }
+                    return {
+                        totalCount: _${type.toLowerCase()}s${queryPropertiesAsArray.length === 0 ? '' : `\n.filter(item => ${
+                            queryPropertiesAsArray.map(prop => {
+                                const itemName = prop
+                                    .replace('query_', '');
+                                return `item.${itemName}${capitalizedIdFieldName} === (${itemName}${capitalizedIdFieldName} || item.${itemName}${capitalizedIdFieldName})`;
+                            }).join(' && ')
+                        })`}.length,
+                        ${type.toLowerCase()}s: _${type.toLowerCase()}s${queryPropertiesAsArray.length === 0 ? '' : `\n.filter(item => ${
+                                queryPropertiesAsArray.map(prop => {
+                                    const itemName = prop
+                                        .replace('query_', '');
+                                    return `item.${itemName}${capitalizedIdFieldName} === (${itemName}${capitalizedIdFieldName} || item.${itemName}${capitalizedIdFieldName})`;
+                                }).join(' && ')
+                            })`}.slice(after, first)${
+                                // if we have query properties, then we have to get the sub objects
+                                queryPropertiesAsArray.length === 0 ? '' : `.map(item => {
+                                return {...item, ${
+                                    queryPropertiesAsArray
+                                        .map(prop => {
+                                            const itemName = prop
+                                                .replace('query_', '');
+                                            return `${itemName}: _${itemName}s.find(({${idFieldName}}) => ${idFieldName} === item.${itemName}${capitalizedIdFieldName})`;
+                                        })}
+                                    };
+                                })`
+                        }
+                    };
                 }`,
-                `\t\tget${type}: (parent, {id}, context, info) => { id = +id; return _${type.toLowerCase()}s.find(item => item.id === id); }`,
+                `\t\tget${type}: (parent, {${idFieldName}}, context, info) => { ${idFieldName} = +${idFieldName}; return _${type.toLowerCase()}s.find(item => item.${idFieldName} === ${idFieldName}); }`,
             ].join(',\n')
-        }).join(',\n\n') + `\n\t}`;
+        }).join(',\n') + `\n\t}`;
 
     const mutationsAsWeWantIt = `type Mutation {\n` + typeKeys
         .filter(type => typesFromObjects[type].__level === 1)
@@ -258,12 +294,12 @@ const check = async () => {
                 },
                 {
                     operationName: `delete${type}`,
-                    arguments: [{ name: 'id', type: 'ID!' }],
+                    arguments: [{ name: idFieldName, type: 'ID!' }],
                     returnType: `${type}!`
                 },
                 {
                     operationName: `insert${type}`,
-                    arguments: propertiesAsArray,
+                    arguments: propertiesAsArray.filter(property => property.name !== idFieldName),
                     returnType: `${type}!`
                 },
             ];
@@ -290,29 +326,55 @@ const check = async () => {
                 // we remove the query fields
                 .filter(property => property.indexOf('query_') === -1)
                 .map(property => ({ name: property.replace('mutation_', ''), type: typesFromObjects[type][property] }));
+            const mutationPropertiesAsArray = properties
+                .filter(property => property.indexOf('__') === -1)
+                // we get only the query fields
+                .filter(property => property.indexOf('mutation_') === 0);   
 
             return [
                 `\t\tupdate${type}: (parent, {${propertiesAsArray.map(x => x.name).join(', ')}}, context, info) => {
-                    const _item = _${type.toLowerCase()}s.find(_item => _item.id === id);
+                    ${idFieldName} = +${idFieldName};
+                    ${
+                        propertiesAsArray
+                        .filter(property => /\!$/.test(property.type))
+                        .map(property => `if (!${property.name}) throw 'Missing property ${property.name}';`).join('\n')
+                    }
+                    ${
+                        // intergerify the IDs
+                        mutationPropertiesAsArray.length === 0 ? '' : mutationPropertiesAsArray.map(prop => prop.replace('mutation_', '') + ' = +' + prop.replace('mutation_', '') + ';').join('\n')
+                    }
+                    const _item = _${type.toLowerCase()}s.find(_item => _item.${idFieldName} === ${idFieldName});
                     if (_item) {
                         ${propertiesAsArray.map((x, i) => `${i ? `\t\t\t` : ``}_item.${x.name} = ${x.name}`).join(';\n')};
                     }
                     return _item;
                 }`,
-                    `\t\tdelete${type}: (parent, {id}, context, info) => {
-                    const itemIndex = _${type.toLowerCase()}s.findIndex(_item => _item.id === id);
+                `\t\tdelete${type}: (parent, {${idFieldName}}, context, info) => {
+                        if (!id) throw 'Missing property id';
+                        ${idFieldName} = +${idFieldName};
+                    const itemIndex = _${type.toLowerCase()}s.findIndex(_item => _item.${idFieldName} === ${idFieldName});
                     if (itemIndex > -1) {
                         return _${type.toLowerCase()}s.splice(itemIndex, 1)[0];
                     }
                     return null;
                 }`,
-                `\t\tinsert${type}: (parent, {${propertiesAsArray.map(x => x.name).join(', ')}}, context, info) => {
-                    let _item = _${type.toLowerCase()}s.find(_item => _item.id === id);
-                    if (!_item) {
-                        _item = {};
-                        ${propertiesAsArray.map((x, i) => `${i ? `\t\t\t` : ``}_item.${x.name} = ${x.name}`).join(';\n')}
-                        _${type.toLowerCase()}s.push(_item);
+                `\t\tinsert${type}: (parent, {${propertiesAsArray.filter(property => property.name !== idFieldName).map(x => x.name).join(', ')}}, context, info) => {
+                    ${
+                        propertiesAsArray
+                        .filter(property => property.name !== idFieldName)
+                        .filter(property => /\!$/.test(property.type))
+                        .map(property => `if (!${property.name}) throw 'Missing property ${property.name}';`).join('\n')
                     }
+                    ${
+                        // intergerify the IDs
+                        mutationPropertiesAsArray.length === 0 ? '' : mutationPropertiesAsArray.map(prop => prop.replace('mutation_', '') + ' = +' + prop.replace('mutation_', '') + ';').join('\n')
+                    }
+                    const _item = {};
+                    ${propertiesAsArray.filter(property => property.name !== idFieldName).map((x, i) => `${i ? `\t\t\t` : ``}_item.${x.name} = ${x.name}`).join(';\n')}
+                    __ids['${type.toLowerCase()}']++;
+                    _item.${idFieldName} = __ids['${type.toLowerCase()}'];
+                    _${type.toLowerCase()}s.push(_item);
+                    console.log(_item);
                     return _item;
                 }`,
             ].join(',\n')
@@ -324,9 +386,19 @@ const path = require('path');
 
 ${
     Object
+    .keys(typesFromObjects)
+    .filter(type => typesFromObjects[type].__level === 1)
+    .map(type => `const _${type.toLowerCase()}s = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../data/${type.toLowerCase()}s.json')).toString('ascii'));`)
+    .join('\n')
+}
+
+// object to represent the IDs used for a type
+const __ids = {};
+${
+    Object
         .keys(typesFromObjects)
         .filter(type => typesFromObjects[type].__level === 1)
-        .map(type => `const _${type.toLowerCase()}s = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../data/${type.toLowerCase()}s.json')).toString('ascii'))`)
+        .map(type => `__ids['${type.toLowerCase()}'] = _${type.toLowerCase()}s.reduce((agg, curr) => Math.max(agg, curr.${idFieldName}), 0);`)
         .join('\n')
 }
 
