@@ -374,7 +374,6 @@ const check = async () => {
                     __ids['${type.toLowerCase()}']++;
                     _item.${idFieldName} = __ids['${type.toLowerCase()}'];
                     _${type.toLowerCase()}s.push(_item);
-                    console.log(_item);
                     return _item;
                 }`,
             ].join(',\n')
