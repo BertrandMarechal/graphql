@@ -1,0 +1,6 @@
+<h1>Album: {{album.title}}</h1>
+<div class="photo-grid">
+  <div *ngFor="let photo of photos" >
+    <img [src]="photo.thumbnailUrl" alt="photo.title">
+  </div>
+</div>

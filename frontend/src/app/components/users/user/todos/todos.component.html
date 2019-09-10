@@ -1,0 +1,6 @@
+<h2>Todos</h2>
+<div *ngFor="let todo of todos">
+    <span *ngIf="todo.completed">✔</span>
+    <span *ngIf="!todo.completed">🕐</span>
+    {{todo.title}}
+</div>

@@ -1,17 +1,33 @@
-<ul>
-  <li>Users</li>
-  <li *ngFor="let user of (user$|async)?.users">
-    <a [routerLink]="[ user.id ]">{{user.name}}</a>
-  </li>
-</ul>
+<div class="grid">
+  <div>
+    <div>
+      <h3>Users</h3>
+      <button (click)="showCreateUser = !showCreateUser">+</button>
+      <app-create-user *ngIf="showCreateUser" (save)="onSave($event)" (cancel)="showCreateUser = false"></app-create-user>
+      <div>
+        <div *ngFor="let field of userFields; let i = index">
+          <input type="checkbox" (change)="onChangeFields($event, i)" [value]="field.active" id="cb{{i}}">
+          <label for="cb{{i}}">{{field.name}}</label>
+        </div>
+      </div>
+      <span *ngIf="(user$|async)?.gettingUsers">Getting Users...</span>
+      <ul>
+        <li *ngFor="let user of (user$|async)?.users">
+          <a [routerLink]="[ user.id ]">
+              <span>
+                <span>{{user.id}}</span>
+              </span>
+              <span *ngFor="let field of userFields; let i = index">
+                <span *ngIf="field.active"> - {{user[field.name]}}</span>
+              </span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div>
+    <router-outlet></router-outlet>
+  </div>
+</div>
 
-<ul>
-  <li>Users2</li>
-  <li *ngFor="let user of (user$|async)?.users2">
-    <a [routerLink]="[ user.id ]">{{user.name}}</a>
-  </li>
-</ul>
 
-<span *ngIf="(user$|async)?.gettingUsers">Getting Users...</span>
-
-<router-outlet></router-outlet>

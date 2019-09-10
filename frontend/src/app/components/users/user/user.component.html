@@ -1,3 +1,9 @@
 <div>
-  <h1>{{(user$|async)?.user?.name}}</h1>
+  <h1>User: {{(user$|async)?.user?.name}}</h1>
+  <span routerLink="..">close</span>
+</div>
+<div class="grid">
+    <app-albums [albums]="(user$|async)?.albums" [album]="(user$|async)?.album" [photos]="(user$|async)?.photos" (getAlbum)="onGetAlbum($event)"></app-albums>
+    <app-todos [todos]="(user$|async)?.todos"></app-todos>
+    <app-posts [posts]="(user$|async)?.posts"></app-posts>
 </div>

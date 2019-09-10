@@ -1,0 +1,6 @@
+<div>
+    <input type="text" [(ngModel)]="username" placeholder="Username">
+    <input type="text" [(ngModel)]="name" placeholder="Name">
+    <button (click)="save.emit({name: name, username: username})">Save</button>
+    <button (click)="cancel.emit()">Cancel</button>
+</div>

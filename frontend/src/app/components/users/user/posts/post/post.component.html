@@ -1,0 +1,11 @@
+<div>
+  <h5>{{post.title}}</h5>
+  <p>{{post.body}}</p>
+  <div style="margin: 15px">
+    <p *ngFor="let comment of post.comments">
+      <b>{{comment.email}}</b> - "{{comment.name}}"
+      <br>
+      "{{comment.body}}"
+    </p>
+  </div>
+</div>

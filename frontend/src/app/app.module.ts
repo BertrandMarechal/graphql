@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
 import { StoreModule } from '@ngrx/store';
@@ -13,17 +14,32 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { UsersComponent } from './components/users/users.component';
 import { UserComponent } from './components/users/user/user.component';
+import { AlbumsComponent } from './components/users/user/albums/albums.component';
+import { AlbumComponent } from './components/users/user/albums/album/album.component';
+import { PhotoComponent } from './components/users/user/albums/album/photo/photo.component';
+import { CreateUserComponent } from './components/users/create-user/create-user.component';
+import { TodosComponent } from './components/users/user/todos/todos.component';
+import { PostsComponent } from './components/users/user/posts/posts.component';
+import { PostComponent } from './components/users/user/posts/post/post.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     UsersComponent,
-    UserComponent
+    UserComponent,
+    AlbumsComponent,
+    AlbumComponent,
+    PhotoComponent,
+    CreateUserComponent,
+    TodosComponent,
+    PostsComponent,
+    PostComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
+    FormsModule,
     StoreModule.forRoot(reducers),
     EffectsModule.forRoot([]),
     StoreModule.forFeature('user', userReducers),
@@ -35,4 +51,5 @@ import { UserComponent } from './components/users/user/user.component';
   providers: [],
   bootstrap: [AppComponent]
 })
+
 export class AppModule { }

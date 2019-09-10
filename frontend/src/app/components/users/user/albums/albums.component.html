@@ -1,0 +1,3 @@
+<h2>Albums</h2>
+<div *ngFor="let album of albums" (click)="getAlbum.emit(album.id)" style="cursor: pointer">{{album.title}}</div>
+<app-album *ngIf="album" [album]="album" [photos]="photos"></app-album>

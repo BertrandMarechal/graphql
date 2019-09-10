@@ -43,6 +43,7 @@ type Post {
 	title: String!
 	body: String!
 	user: User!
+	comments: [Comment]!
 }
 type Todo {
 	id: ID!

@@ -13,93 +13,15 @@ import { LocalGraphqlService } from 'src/app/services/local-graphql.service';
 
 @Injectable()
 export class UserEffects {
-  // @Effect()
-  // navigateToUsers: Observable<Action> = RouterUtilsService.handleNavigationWithParams(
-  //   'users',
-  //   this.actions$
-  // ).pipe(
-  //   mergeMap((action: RouteNavigationParams) => {
-  //     console.log(action);
-  //     return from(
-  //       this.jsonPlaceholderService.getUsers()
-  //     ).pipe(
-  //       mergeMap((users: User[]) => {
-  //         console.log(users);
-  //         return [
-  //           {
-  //             type: UserActions.SERVICE_GET_USERS_FROM_API_COMPLETE,
-  //             payload: users
-  //           },
-  //         ];
-  //       }),
-  //       catchError((error: String) => {
-  //         return [
-  //           {
-  //             type: UserActions.SERVICE_GET_USERS_FROM_API_FAILED,
-  //             payload: error
-  //           },
-  //         ];
-  //       })
-  //     );
-  //   })
-  // );
-  // @Effect()
-  // navigateToUser: Observable<Action> = RouterUtilsService.handleNavigationWithParams(
-  //   'users/:id',
-  //   this.actions$
-  // ).pipe(
-  //   mergeMap((action: RouteNavigationParams) => {
-
-  //     if (!action.params || !action.params.id || !+action.params.id) {
-  //       return [{
-  //         type: UserActions.USER_API_NOTHING
-  //       }];
-  //     }
-  //     return from(
-  //       this.jsonPlaceholderService.getUser(+action.params.id)
-  //     ).pipe(
-  //       mergeMap((user: User) => {
-  //         console.log(user);
-  //         return [
-  //           {
-  //             type: UserActions.SERVICE_GET_USER_FROM_API_COMPLETE,
-  //             payload: user
-  //           },
-  //         ];
-  //       }),
-  //       catchError((error: String) => {
-  //         return [
-  //           {
-  //             type: UserActions.SERVICE_GET_USER_FROM_API_FAILED,
-  //             payload: error
-  //           },
-  //         ];
-  //       })
-  //     );
-  //   })
-  // );
-  @Effect()
-  navigateToUsers: Observable<Action> = RouterUtilsService.handleNavigationWithParams(
-    'users',
-    this.actions$
-  ).pipe(
-    mergeMap((action: RouteNavigationParams) => {
-      return [
-        {
-          type: UserActions.SERVICE_GET_USERS_FROM_API_COMPLETE
-        },
-      ];
-    })
-  );
   @Effect()
   getUsersFromLocalServer: Observable<Action> = this.actions$
     .pipe(
-      ofType(UserActions.SERVICE_GET_USERS_FROM_API_COMPLETE),
+      ofType(UserActions.PAGE_GET_USERS_FROM_LOCAL_SERVER),
       mergeMap(() => {
         return from(
-          this.localGraphqlService.getUsers()
+          this.localGraphqlService.query('{usersPaginated: getUsers{totalCount users{id name}}}')
         ).pipe(
-          mergeMap((users: User[]) => {
+          mergeMap(({ usersPaginated: { totalCount, users } }: { usersPaginated: { totalCount: number, users: User[] } }) => {
             return [
               {
                 type: UserActions.SERVICE_GET_USERS_FROM_LOCAL_SERVER_COMPLETE,
@@ -111,6 +33,63 @@ export class UserEffects {
             return [
               {
                 type: UserActions.SERVICE_GET_USERS_FROM_LOCAL_SERVER_FAILED,
+                payload: error
+              },
+            ];
+          })
+        );
+      })
+    );
+
+  @Effect()
+  queryGraphQL: Observable<Action> = this.actions$
+    .pipe(
+      ofType(UserActions.PAGE_CALL_GRAPHQL),
+      mergeMap((action: UserActions.PageCallGraphQLAction) => {
+        return from(
+          this.localGraphqlService.query(action.payload.query, action.payload.variables, action.payload.operationName)
+        ).pipe(
+          mergeMap((data: any) => {
+            return [
+              {
+                type: action.payload.outputAction,
+                payload: data
+              },
+            ];
+          }),
+          catchError((error: String) => {
+            return [
+              {
+                type: action.payload.outputAction.replace(/ complete$/, ' failed'),
+                payload: error
+              },
+            ];
+          })
+        );
+      })
+    );
+  @Effect()
+  addUser: Observable<Action> = this.actions$
+    .pipe(
+      ofType(UserActions.PAGE_ADD_USER),
+      mergeMap((action: UserActions.PageAddUserAction) => {
+        return from(
+          this.localGraphqlService.mutation(
+            `mutation addUser($name: String!, $username: String!){user: insertUser(name: $name, username: $username){id name username}}`,
+            action.payload)
+        ).pipe(
+          mergeMap((data: { user: User }) => {
+            return [
+              {
+                type: UserActions.SERVICE_ADD_USER_COMPLETE,
+                payload: data.user
+              },
+            ];
+          }),
+          catchError((error: String) => {
+            return [
+              {
+                type: UserActions.SERVICE_ADD_USER_FAILED,
                 payload: error
               },
             ];
